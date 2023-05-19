@@ -32,7 +32,7 @@
       <div class="col-md-6">
         <h2 class="text-center mb-5">Upload Audio File</h2>
 
-        <form action="/speechToText" method="post" enctype="multipart/form-data">
+        <form action="/speechToText" method="post" enctype="multipart/form-data" id="uploadForm">
           <div class="form-group">
             <label for="audioFile">Choose an audio file to upload:</label>
             <input type="file" class="form-control-file" id="audioFile" name="file" accept="audio/*">
@@ -53,6 +53,34 @@
   </div>
 
   <script>
+    const form = document.getElementById("uploadForm");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const fileInput = document.getElementById("audioFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        console.warn("No audio file selected.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch("/speechToText", {
+        method: "POST",
+        body: formData
+      })
+        .then(response => response.text())
+        .then(text => {
+          displayResults(text);
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    });
+
     function displayResults(text) {
       const resultsContainer = document.getElementById("resultsContainer");
 
