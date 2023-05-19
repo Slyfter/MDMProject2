@@ -18,44 +18,33 @@ import java.nio.file.StandardCopyOption;
 @RestController
 public class SpeechToTextController {
 
-    private WhisperModel whisperModel;
-    private Path tempFile;
-
-    public SpeechToTextController() throws IOException, ModelException {
-        whisperModel = new WhisperModel();
-    }
-
     @PostMapping(value = "/speechToText", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> convertSpeechToText(@RequestParam("file") MultipartFile file) throws IOException, TranslateException {
-        // Delete the previous temporary file, if any
-        deleteTempFile();
-
-        // Create a new temporary file for the current request
-        tempFile = Files.createTempFile("speechToText", ".wav");
-        try {
-            // Save the uploaded file to the temporary file
-            try (var inputStream = file.getInputStream()) {
-                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            // Process the current file
-            String text = whisperModel.speechToText(tempFile);
-            return ResponseEntity.ok(text);
-        } finally {
-            // Delete the temporary file after processing
-            deleteTempFile();
-        }
-    }
-
-    private void deleteTempFile() {
-        if (tempFile != null) {
+    public ResponseEntity<String> convertSpeechToText(@RequestParam("file") MultipartFile file) throws IOException, TranslateException, ModelException {
+        try (// Create a new WhisperModel instance for each request
+        WhisperModel whisperModel = new WhisperModel()) {
+            // Create a temporary file for the current request
+            Path tempFile = Files.createTempFile("speechToText", ".wav");
             try {
-                Files.deleteIfExists(tempFile);
-            } catch (IOException e) {
-                // Handle or log any exception during file deletion
-                e.printStackTrace();
+                // Save the uploaded file to the temporary file
+                try (var inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                }
+   
+                // Process the current file
+                String text = whisperModel.speechToText(tempFile);
+   
+                // Remove the last whitespace character and the last dot from the result
+                if (text.endsWith(" ")) {
+                    text = text.substring(0, text.length() - 1);
+                }
+                if (text.endsWith(".")) {
+                    text = text.substring(0, text.length() - 1);
+                }
+   
+                return ResponseEntity.ok(text);
             } finally {
-                tempFile = null;
+                // Delete the temporary file after processing
+                Files.deleteIfExists(tempFile);
             }
         }
     }
