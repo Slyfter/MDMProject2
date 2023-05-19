@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio Uploader</title>
+</head>
+<body>
+  <h1>Audio Uploader</h1>
+  <input type="file" id="audioFile" accept="audio/*">
+  <button id="uploadButton" onclick="uploadAudio()">Upload</button>
+
+  <div id="resultsContainer"></div>
+
+  <script>
+    function uploadAudio() {
+      const fileInput = document.getElementById("audioFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        console.warn("No audio file selected.");
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      fetch("/speechToText", {
+        method: "POST",
+        body: formData
+      })
+        .then(response => response.text())
+        .then(text => {
+          displayResults(text);
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+    }
+  
+    function displayResults(text) {
+      const resultsContainer = document.getElementById("resultsContainer");
+
+      // Use regular expression to extract the desired text
+      const regex = /(?<=>)[^<]+/g;
+      const matches = text.match(regex);
+
+      if (matches && matches.length > 0) {
+        // Join the matches to form the final result string
+        const resultText = matches.join(" ");
+        resultsContainer.innerText = resultText;
+      } else {
+        resultsContainer.innerText = "No result found.";
+      }
+    }
+  </script>
+</body>
+</html>
