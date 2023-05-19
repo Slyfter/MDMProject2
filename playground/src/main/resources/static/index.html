@@ -2,39 +2,57 @@
 <html>
 <head>
   <title>Audio Uploader</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    .custom-container {
+      border: 3px solid olive;
+      padding: 30px;
+      background-color: rgb(236, 236, 236);
+    }
+
+    #title-container {
+      background-color: rgb(236, 236, 236);
+      border: 3px solid olive;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: olive;
+    }
+  </style>
 </head>
 <body>
-  <h1>Audio Uploader</h1>
-  <input type="file" id="audioFile" accept="audio/*">
-  <button id="uploadButton" onclick="uploadAudio()">Upload</button>
+  <div class="container mt-5 custom-container" id="title-container">
+    <h1>Audio Uploader</h1>
+  </div>
 
-  <div id="resultsContainer"></div>
+  <div class="container mt-5 custom-container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h2 class="text-center mb-5">Upload Audio File</h2>
+
+        <form action="/speechToText" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="audioFile">Choose an audio file to upload:</label>
+            <input type="file" class="form-control-file" id="audioFile" name="file" accept="audio/*">
+          </div>
+          <button type="submit" class="btn btn-primary mt-3">Upload Audio</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-5 custom-container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h2 class="text-center mb-5">Results</h2>
+        <div id="resultsContainer"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    function uploadAudio() {
-      const fileInput = document.getElementById("audioFile");
-      const file = fileInput.files[0];
-      if (!file) {
-        console.warn("No audio file selected.");
-        return;
-      }
-  
-      const formData = new FormData();
-      formData.append("file", file);
-  
-      fetch("/speechToText", {
-        method: "POST",
-        body: formData
-      })
-        .then(response => response.text())
-        .then(text => {
-          displayResults(text);
-        })
-        .catch(error => {
-          console.error("Error:", error);
-        });
-    }
-  
     function displayResults(text) {
       const resultsContainer = document.getElementById("resultsContainer");
 
@@ -51,5 +69,9 @@
       }
     }
   </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 </body>
 </html>
